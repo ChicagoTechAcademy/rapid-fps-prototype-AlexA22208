@@ -29,13 +29,17 @@ AFPSProjectile::AFPSProjectile()
         // Use this component to drive this projectile's movement.
         ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
         ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
-        ProjectileMovementComponent->InitialSpeed = 3000.0f;
-        ProjectileMovementComponent->MaxSpeed = 3000.0f;
+        ProjectileMovementComponent->InitialSpeed = 1000.0f;
+        ProjectileMovementComponent->MaxSpeed = 1000.0f;
         ProjectileMovementComponent->bRotationFollowsVelocity = true;
         ProjectileMovementComponent->bShouldBounce = true;
-        ProjectileMovementComponent->Bounciness = 0.3f;
+        ProjectileMovementComponent->Bounciness = 6.3f;
         ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
     }
+
+
+    // Delete the projectile after 3 seconds.
+    InitialLifeSpan = 30.0f;
 
 }
 
@@ -56,4 +60,29 @@ void AFPSProjectile::Tick(float DeltaTime)
 void AFPSProjectile::FireInDirection(const FVector& ShootDirection)
 {
     ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
+}
+
+// Function that is called when the projectile hits something.
+void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+    if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+    {
+        OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
+    }
+
+    // Disable the Projectile Movemeny Component
+    if (ProjectileMovementComponent)
+    {
+        ProjectileMovementComponent->StopMovementImmediately();
+        ProjectileMovementComponent->SetActive(false);
+    }
+
+    // Enable Physics simulation on the collision component
+    if (CollisionComponent)
+    {
+        CollisionComponent->SetSimulatePhysics(true);
+        // Apply the current velocity as an impulse to mantain momentum
+        CollisionComponent->AddImpulse(ProjectileMovementComponent->Velocity);
+    }
+    //Destroy();
 }
