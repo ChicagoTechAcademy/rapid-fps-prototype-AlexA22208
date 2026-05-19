@@ -140,4 +140,3 @@ void APlayerCharacter::Reload(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Warning, TEXT("Stored Ammo: %d"), storedAmmo);
 		UE_LOG(LogTemp, Warning, TEXT("Current Ammo: %d"), currentAmmo);
 	}
-}
